@@ -1,62 +1,53 @@
 import React, { useState } from 'react';
-import { Alert, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Header } from '../components/Header';
-import { MyTasksList } from '../components/MyTasksList';
+import { Task, TasksList } from '../components/TasksList';
 import { TodoInput } from '../components/TodoInput';
-
-interface Task {
-  id: number;
-  title: string;
-  done: boolean;
-}
 
 export function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [mode, setMode] = useState(false);
 
   function handleAddTask(newTaskTitle: string) {
-    if (newTaskTitle == '') {
-      Alert.alert('O campo está vazio, por favor digite alguma coisa!')
-      return
-    }
-    const data = {
-      id: new Date().getTime(),
-      title: newTaskTitle,
-      done: false
-    }
-    setTasks(oldState => [...oldState, data]);
+      const newTask = {
+        id: new Date().getTime(),
+        title: newTaskTitle,
+        done: false
+      }
+       setTasks(oldTask => [...oldTask, newTask]);   
   }
 
-  function handleMarkTaskAsDone(id: number) {
-    const task = tasks.filter((item) => item?.id === id)[0];
-
-    task.done = !task?.done;
-
-    const newTasks = [...new Set([task, ...tasks])];
-
-    setTasks(newTasks);
+  function handleToggleTaskDone(id: number) {
+    const updateTask = tasks.map(task => ({ ...task}))
+    const founditem = updateTask.find(task => task.id === id);
+    if(!founditem) {return}
+    founditem.done = !founditem.done;
+    setTasks(updateTask)
   }
 
   function handleRemoveTask(id: number) {
-    setTasks(oldState => oldState.filter(
-      skill => skill.id !== id
-    ));
+    const updateTask = tasks.filter(item => item.id !== id)
+    setTasks(updateTask)
   }
 
   return (
-    <View style={mode === true && { flex: 1, backgroundColor: '#222222' }}>
-      <Header mode={mode} setMode={setMode} />
+    <View style={styles.container}>
+      <Header tasksCounter={tasks.length} />
 
-      <TodoInput mode={mode} addTask={handleAddTask} />
+      <TodoInput addTask={handleAddTask} />
 
-      <MyTasksList
-        mode={mode}
-        tasks={tasks}
-        onPress={handleMarkTaskAsDone}
-        onLongPress={handleRemoveTask}
-
+      <TasksList 
+        tasks={tasks} 
+        toggleTaskDone={handleToggleTaskDone}
+        removeTask={handleRemoveTask} 
       />
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#EBEBEB'
+  }
+})
